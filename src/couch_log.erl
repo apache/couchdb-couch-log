@@ -14,6 +14,10 @@
 
 -export([debug/2, info/2, notice/2, warning/2, error/2, critical/2, alert/2, emergency/2]).
 
+% non formatting functions
+-export([notice/1]).
+
+
 debug(Fmt, Args) ->
     catch couch_stats:increment_counter([couch_log, level, debug]),
     lager:debug(Fmt, Args).
@@ -25,6 +29,9 @@ info(Fmt, Args) ->
 notice(Fmt, Args) ->
     catch couch_stats:increment_counter([couch_log, level, notice]),
     lager:notice(Fmt, Args).
+notice(Msg) ->
+    catch couch_stats:increment_counter([couch_log, level, notice]),
+    lager:notice(Msg).
 
 warning(Fmt, Args) ->
     catch couch_stats:increment_counter([couch_log, level, warning]),
