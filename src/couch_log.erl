@@ -12,12 +12,10 @@
 
 -module(couch_log).
 
--ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
--endif.
 
 -export([debug/2, info/2, notice/2, warning/2, error/2, critical/2, alert/2, emergency/2]).
--export([set_level/1]).
+-export([set_level/1, get_backend/0]).
 
 -callback debug(Fmt::string(), Args::list()) -> ok.
 -callback info(Fmt::string(), Args::list()) -> ok.
@@ -31,113 +29,64 @@
 
 -spec debug(string(), list()) -> ok.
 debug(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, debug]),
     Backend:debug(Fmt, Args).
 
 -spec info(string(), list()) -> ok.
 info(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, info]),
     Backend:info(Fmt, Args).
 
 -spec notice(string(), list()) -> ok.
 notice(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, notice]),
     Backend:notice(Fmt, Args).
 
 -spec warning(string(), list()) -> ok.
 warning(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, warning]),
     Backend:warning(Fmt, Args).
 
 -spec error(string(), list()) -> ok.
 error(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, 'error']),
     Backend:error(Fmt, Args).
 
 -spec critical(string(), list()) -> ok.
 critical(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, critical]),
     Backend:critical(Fmt, Args).
 
 -spec alert(string(), list()) -> ok.
 alert(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, alert]),
     Backend:alert(Fmt, Args).
 
 -spec emergency(string(), list()) -> ok.
 emergency(Fmt, Args) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     catch couch_stats:increment_counter([couch_log, level, emergency]),
     Backend:emergency(Fmt, Args).
 
 -spec set_level(atom()) -> ok.
 set_level(Level) ->
-    {ok, Backend} = get_backend(),
+    {ok, Backend} = ?MODULE:get_backend(),
     Backend:set_level(Level).
 
 -spec get_backend() -> {ok, atom()}.
+-ifdef(TEST).
+get_backend() ->
+    {ok, couch_log_testbackend}.
+-else.
 get_backend() ->
     application:get_env(?MODULE, backend).
-
--ifdef(TEST).
-
-callbacks_test_() ->
-    {setup,
-        fun setup/0,
-        fun cleanup/1,
-        [
-            ?_assertEqual({ok, couch_log_eunit}, get_backend()),
-            ?_assertEqual(ok, couch_log:set_level(info)),
-            ?_assertEqual(ok, couch_log:debug("debug", [])),
-            ?_assertEqual(ok, couch_log:info("info", [])),
-            ?_assertEqual(ok, couch_log:notice("notice", [])),
-            ?_assertEqual(ok, couch_log:warning("warning", [])),
-            ?_assertEqual(ok, couch_log:error("error", [])),
-            ?_assertEqual(ok, couch_log:critical("critical", [])),
-            ?_assertEqual(ok, couch_log:alert("alert", [])),
-            ?_assertEqual(ok, couch_log:emergency("emergency", [])),
-            ?_assertEqual(stats_calls(), meck:history(couch_stats, self())),
-            ?_assertEqual(log_calls(), meck:history(couch_log_eunit, self()))
-        ]
-    }.
-
-setup() ->
-    meck:new([couch_stats, couch_log_eunit], [non_strict]),
-    meck:expect(couch_stats, increment_counter, 1, ok),
-    setup_couch_log_eunit(),
-    application:load(?MODULE),
-    application:set_env(?MODULE, backend, couch_log_eunit).
-
-cleanup(_) ->
-    meck:unload([couch_stats, couch_log_eunit]).
-
-setup_couch_log_eunit() ->
-    meck:expect(couch_log_eunit, set_level, 1, ok),
-    Levels = [debug, info, notice, warning, error, critical, alert, emergency],
-    lists:foreach(fun(Fun) ->
-        meck:expect(couch_log_eunit, Fun, 2, ok)
-    end, Levels).
-
-stats_calls() ->
-    Levels = [debug, info, notice, warning, error, critical, alert, emergency],
-    lists:map(fun(Level) ->
-        MFA = {couch_stats, increment_counter, [[couch_log, level, Level]]},
-        {self(), MFA, ok}
-    end, Levels).
-
-log_calls() ->
-    Levels = [debug, info, notice, warning, error, critical, alert, emergency],
-    Calls = lists:map(fun(Level) ->
-        MFA = {couch_log_eunit, Level, [atom_to_list(Level),[]]},
-        {self(), MFA, ok}
-    end, Levels),
-    [{self(), {couch_log_eunit, set_level, [info]}, ok}|Calls].
-
 -endif.
+
+
