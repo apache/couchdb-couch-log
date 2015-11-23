@@ -29,31 +29,28 @@
     set_level/1
 ]).
 
-debug(Fmt, Args) ->
-    write_log("[debug] " ++ Fmt, Args).
+debug(_Fmt, _Args) ->
+    ok.
 
-info(Fmt, Args) ->
-    write_log("[info] " ++ Fmt, Args).
+info(_Fmt, _Args) ->
+    ok.
 
-notice(Fmt, Args) ->
-    write_log("[notice] " ++ Fmt, Args).
+notice(_Fmt, _Args) ->
+    ok.
 
-warning(Fmt, Args) ->
-    write_log("[warning] " ++ Fmt, Args).
+warning(_Fmt, _Args) ->
+    ok.
 
-error(Fmt, Args) ->
-    write_log("[error] " ++ Fmt, Args).
+error(_Fmt, _Args) ->
+    ok.
 
-critical(Fmt, Args) ->
-    write_log("[critical] " ++ Fmt, Args).
+critical(_Fmt, _Args) ->
+    ok.
 
-alert(Fmt, Args) ->
-    write_log("[alert] " ++ Fmt, Args).
+alert(_Fmt, _Args) ->
+    ok.
 
-emergency(Fmt, Args) ->
-    write_log("[emergency] " ++ Fmt, Args).
-
-write_log(_Fmt, _Args) ->
+emergency(_Fmt, _Args) ->
     ok.
 
 set_level(_) ->
