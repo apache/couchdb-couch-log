@@ -34,13 +34,6 @@
 ]).
 
 
--ifdef(TEST).
--define(RELISTEN_DELAY, 500).
--else.
--define(RELISTEN_DELAY, 5000).
--endif.
-
-
 start_link() ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, nil, []).
 
@@ -92,10 +85,8 @@ handle_config_change(_, _, _, _, Settings) ->
     {ok, Settings}.
 
 
-handle_config_terminate(_, stop, _) ->
-    ok;
 handle_config_terminate(_, _, _) ->
-    erlang:send_after(?RELISTEN_DELAY, whereis(?MODULE), restart_listener).
+    ok.
 
 
 -ifdef(TEST).
